@@ -26,3 +26,11 @@ export function migrateDefault(state){if(state.resetVersion==='paper-v3')return 
 export function resetGame(state,confirmed){return confirmed?{...state,sessions:[],current:null,suspended:null}:state}
 
 export function buildNotebook(sessions,setId){const groups=new Map();const records=sessions.filter(s=>s.setId===setId).flatMap(s=>s.answers.filter(a=>a.evaluation).map((a,i)=>({...a,at:a.createdAt||s.created,order:i}))).sort((a,b)=>String(a.at).localeCompare(String(b.at))||a.order-b.order);for(const a of records){const key=a.question.prompt;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(a)}return [...groups.entries()].filter(([key,a])=>a.some(x=>x.evaluation.score<80)).map(([key,attempts])=>({key,question:attempts.at(-1).question,attempts,latest:attempts.at(-1),resolved:attempts.at(-1).evaluation.score>=80})).sort((a,b)=>a.latest.evaluation.score-b.latest.evaluation.score)}
+
+export function sessionSummary(session){
+ const answers=session.answers||[];
+ const total=answers.reduce((sum,a)=>sum+(a.evaluation?.score||0),0);
+ const average=answers.length?Math.round(total/answers.length):0;
+ const message=average>=90?'준비 완료! 당당하게 가즈아~':average>=80?'꽤 괜찮은데? 조금만 더 다듬자!':average>=60?'연습 게임 몇 번 더 해볼까?':average>=40?'이렇게 갈 거야? 오답노트로 가자!':'미궁 속으로… 힌트부터 다시 잡자!';
+ return {total,max:answers.length*100,average,message};
+}
