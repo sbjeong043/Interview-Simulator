@@ -3,7 +3,7 @@
 경동나비엔 2차 최고경영진 면접을 준비하는 한국어 웹 앱. Pretendard, 라이트 모드, Banksalad 참고 초록색과 8px 모서리를 사용합니다.
 
 ## 기능
-- 연습: 주요 13개 / 부가 4개 / 전체 17개, 키워드 힌트, 즉시 점수 및 피드백
+- 연습: 주요 16개 / 부가 15개 / 전체 31개, 키워드 힌트, 즉시 점수 및 피드백
 - 시험: 전체 질문 랜덤 출제, 힌트 없이 종료 후 일괄 평가
 - 회사별 시험 1차·2차·3차 기록과 평균 변화
 - 80점 미만 오답노트와 원본을 남기는 재연습
@@ -17,7 +17,10 @@
 Node.js 24 이상에서 `npm test`, `npm start`를 실행합니다. http://127.0.0.1:4173 에서 확인합니다. 설치할 의존성이 없습니다.
 
 ## 웹 배포
-main 브랜치에 push하면 GitHub Actions가 테스트 후 GitHub Pages에 배포합니다. 저장소 Settings → Pages에서 Source를 GitHub Actions로 설정해야 할 수 있습니다. `.github/workflows/pages.yml`이 배포합니다. 일반 정적 호스팅에는 index.html, style.css, app.mjs, core.mjs를 함께 올리면 됩니다.
+main 브랜치에 push하면 GitHub Actions가 테스트 후 GitHub Pages에 배포합니다. 저장소 Settings → Pages에서 Source를 GitHub Actions로 설정해야 할 수 있습니다. `.github/workflows/pages.yml`이 배포합니다. 일반 정적 호스팅에는 index.html, style.css, app.mjs, core.mjs, final-data.mjs를 함께 올리면 됩니다.
 
 ## 저장과 개인정보
 답변은 서버로 전송하지 않으며 브라우저 저장소에 보관합니다. 폰트는 jsDelivr에서 불러옵니다. 브라우저 데이터 삭제 또는 다른 기기에서는 기록이 사라지므로 JSON으로 백업하세요. 백업에는 스크립트와 실제 답변이 포함됩니다. 시험 중에는 평가가 저장되지 않고 종료 시 계산됩니다.
+
+## 최종 스크립트 반영
+최종 DOCX의 질문 30개와 마지막 역질문 1개(예시 3가지)를 반영했습니다. 주요 16개는 최우선 15개와 역질문이며 부가 15개는 직무 백업 6개와 인성 백업 9개입니다. 답변 원문은 final-data.mjs에 보존합니다. 이전 navien 세트가 저장된 브라우저에는 새 최종본을 추가하고 기존 답변 및 진행 회차를 보존합니다.
