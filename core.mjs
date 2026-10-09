@@ -11,7 +11,7 @@ export function evaluate(q,answer){
  return {score:dimensions.reduce((a,b)=>a+b,0),dimensions,hit,gaps,strengths:hit.length?`핵심 표현 ${hit.join(' · ')}을 담았습니다.`:'질문과 연결되는 핵심 표현을 아직 확인하지 못했습니다.',advice:gaps.length?`${gaps.slice(0,3).join(' · ')} 내용을 자신의 경험으로 보완해보세요. 결론 → 근거/사례 → 기여 순서로 정리하면 좋습니다.`:'핵심 표현은 충분합니다. 본인의 행동과 결과가 명확한지, 실제로 하지 않은 경험을 넣지 않았는지 확인하세요.'};
 }
 export function startSession(setId,kind,questions,scope='all'){if(!questions.length)throw Error('질문을 추가해주세요.');return{id:uid(),setId,kind,scope,questions:shuffle(questions),answers:[],index:0,draft:'',hint:false,complete:false,created:new Date().toISOString()}}
-export function submitAnswer(s,answer){if(!answer.trim())throw Error('답변을 입력해주세요.');if(s.complete)throw Error('이미 완료한 회차입니다.');return{...s,answers:[...s.answers,{question:s.questions[s.index],answer,hint:s.hint, ...(s.kind==='practice'?{evaluation:evaluate(s.questions[s.index],answer)}:{})}],index:s.index+1,draft:'',hint:false,complete:s.index+1===s.questions.length}}
+export function submitAnswer(s,answer){if(!answer.trim())throw Error('답변을 입력해주세요.');if(s.complete)throw Error('이미 완료한 회차입니다.');return{...s,answers:[...s.answers,{question:s.questions[s.index],answer,createdAt:new Date().toISOString(),hint:s.hint, ...(s.kind==='practice'?{evaluation:evaluate(s.questions[s.index],answer)}:{})}],index:s.index+1,draft:'',hint:false,complete:s.index+1===s.questions.length}}
 export function parseScript(text){
  const lines=text.trim().split(/\r?\n/);let out=[],q=null;
  for(let line of lines){line=line.trim();if(!line)continue;const isQ=/^(?:#{1,4}\s*|\d+[.)]\s*|질문\s*[:：]|Q[.:：]\s*)/.test(line)||line.endsWith('?');if(isQ){q={id:uid(),prompt:line.replace(/^(?:#{1,4}\s*|\d+[.)]\s*|질문\s*[:：]|Q[.:：]\s*)/,''),reference:'',keywords:[],category:'main'};out.push(q)}else if(q)q.reference+=(q.reference?'\n':'')+line.replace(/^(답변|A)\s*[:：.]\s*/,'');}
@@ -23,4 +23,6 @@ export function importSessions(data,imported){if(!Array.isArray(data.sessions))r
 export function canStart(state){return !state.current}
 
 export function migrateDefault(state){if(state.resetVersion==='paper-v3')return state;const sets=[...state.sets.filter(s=>!['navien','navien-final-v2',defaultSet.id].includes(s.id)),structuredClone(defaultSet)];return {...state,sets,selected:defaultSet.id,sessions:[],current:null,resetVersion:'paper-v3'}}
-export function resetGame(state,confirmed){return confirmed?{...state,sessions:[],current:null}:state}
+export function resetGame(state,confirmed){return confirmed?{...state,sessions:[],current:null,suspended:null}:state}
+
+export function buildNotebook(sessions,setId){const groups=new Map();const records=sessions.filter(s=>s.setId===setId).flatMap(s=>s.answers.filter(a=>a.evaluation).map((a,i)=>({...a,at:a.createdAt||s.created,order:i}))).sort((a,b)=>String(a.at).localeCompare(String(b.at))||a.order-b.order);for(const a of records){const key=a.question.prompt;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(a)}return [...groups.entries()].filter(([key,a])=>a.some(x=>x.evaluation.score<80)).map(([key,attempts])=>({key,question:attempts.at(-1).question,attempts,latest:attempts.at(-1),resolved:attempts.at(-1).evaluation.score>=80})).sort((a,b)=>a.latest.evaluation.score-b.latest.evaluation.score)}

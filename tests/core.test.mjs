@@ -16,3 +16,5 @@ test('최종본의 새 핵심 주제와 역질문 선택지가 있다',()=>{let 
 
 test('이번 문서 업데이트는 기록을 한 번만 초기화한다',()=>{let old={sets:[{id:'navien'}],selected:'navien',sessions:[{id:'old'}],current:{id:'old'}};let next=core.migrateDefault(old);assert.deepEqual(next.sessions,[]);assert.equal(next.current,null);next.sessions.push({id:'new'});assert.equal(core.migrateDefault(next).sessions.length,1)});
 test('새 게임 삭제 확인을 취소하면 기록과 초안을 보존한다',()=>{let state={sessions:[{id:'a'}],current:{draft:'작성중'},sets:[]};assert.equal(core.resetGame(state,false),state);assert.deepEqual(core.resetGame(state,true).sessions,[]);assert.equal(core.resetGame(state,true).current,null)});
+
+test('오답노트는 같은 질문을 묶고 최근 점수로 보완 상태를 판단한다',()=>{let q=core.defaultSet.questions[0];let sessions=[{setId:'x',created:'2026-01-01',answers:[{question:q,evaluation:{score:30}}]},{setId:'x',created:'2026-01-02',answers:[{question:q,evaluation:{score:90}}]}];let notes=core.buildNotebook(sessions,'x');assert.equal(notes.length,1);assert.equal(notes[0].latest.evaluation.score,90);assert.equal(notes[0].resolved,true);assert.equal(notes[0].attempts.length,2)});
