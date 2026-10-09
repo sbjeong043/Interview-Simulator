@@ -1,4 +1,4 @@
-import {finalSet} from './final-data.mjs?v=20261009-31b';
+import {finalSet} from './final-data.mjs?v=paper-v3';
 export const defaultSet=finalSet;
 export const uid=()=>globalThis.crypto?.randomUUID?.()||Date.now()+'-'+Math.random().toString(36).slice(2);
 export function shuffle(items){let a=[...items];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
@@ -22,4 +22,5 @@ export function validateImport(data){if(!data||!Array.isArray(data.sets)||!data.
 export function importSessions(data,imported){if(!Array.isArray(data.sessions))return[];const map=new Map(data.sets.map((s,i)=>[s.id,imported[i].id]));return data.sessions.map(s=>{if(!s.complete||!map.has(s.setId)||!['practice','exam'].includes(s.kind)||!Array.isArray(s.answers)||!s.answers.length||!Number.isFinite(Date.parse(s.created)))throw Error('백업 기록 형식이 올바르지 않습니다.');let answers=s.answers.map(a=>{validateImport({sets:[{company:'검증',role:'검증',questions:[a.question]}]});if(typeof a.answer!=='string'||!a.answer.trim())throw Error('답변 기록 형식이 올바르지 않습니다.');return{question:a.question,answer:a.answer,hint:!!a.hint,evaluation:evaluate(a.question,a.answer)}});return{id:uid(),setId:map.get(s.setId),kind:s.kind,scope:s.scope,questions:answers.map(a=>a.question),answers,index:answers.length,complete:true,created:s.created}})}
 export function canStart(state){return !state.current}
 
-export function migrateDefault(state){const selected=state.selected==='navien'?defaultSet.id:state.selected;if(state.sets.some(s=>s.id===defaultSet.id))return {...state,selected};return {...state,selected,sets:[...state.sets.map(s=>s.id==='navien'?{...s,role:String(s.role||'').includes('이전 스크립트')?s.role:String(s.role||'UI 기획')+' · 이전 스크립트'}:s),structuredClone(defaultSet)]}}
+export function migrateDefault(state){if(state.resetVersion==='paper-v3')return state;const sets=[...state.sets.filter(s=>!['navien','navien-final-v2',defaultSet.id].includes(s.id)),structuredClone(defaultSet)];return {...state,sets,selected:defaultSet.id,sessions:[],current:null,resetVersion:'paper-v3'}}
+export function resetGame(state,confirmed){return confirmed?{...state,sessions:[],current:null}:state}
